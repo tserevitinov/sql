@@ -1,0 +1,27 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+#1 часть
+ACTV = pd.read_csv("ACTV.csv")
+
+ACTV1 = ACTV[(ACTV.Roaming == 1)].groupby(['ID_abon', 'Date_of_call'])['ID_abon'].size().to_frame('Countbell').reset_index()
+ACTV1['RowNum'] = ACTV1.sort_values(by='Countbell', ascending=False).groupby('Date_of_call').cumcount() + 1
+ACTV1 = ACTV1[['Date_of_call', 'Countbell', 'ID_abon', 'RowNum']]
+ACTV2 = ACTV1[(ACTV1.RowNum <= 5)].sort_values(['Date_of_call', 'Countbell', 'ID_abon'], ascending=[True, False, True])
+ACTV2 = ACTV2[['Date_of_call', 'Countbell', 'ID_abon']]
+
+ACTV2.to_csv('ACTV_New.csv')
+
+#2 часть
+AbonNum = len(ACTV.ID_abon.unique())
+calls_per_day_Rom = []
+ACTV_1 = ACTV1.sort_values('Date_of_call', ascending=True)
+ACTV_2 = ACTV_1.groupby('Date_of_call')
+for i in range(1, max(ACTV_1['Date_of_call']) + 1):
+    df = ACTV_2.get_group(i)
+    calls_per_day_Rom.append(round(sum(df['Countbell'])/AbonNum,2))
+
+index = np.arange(len(calls_per_day_Rom))
+plt.bar(index, calls_per_day_Rom)
+plt.show()
